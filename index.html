@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>進貨利潤管理系統</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --danger: #dc2626;
+      --ok: #16a34a;
+      --warn: #ca8a04;
+      --line: #e5e7eb;
+      --shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 240px);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 24px auto 36px;
+      padding: 0 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-light {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      padding: 14px;
+    }
+
+    .kpi .name {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .kpi .value {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .panel-title {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 11px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 980px;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #f0f2f5;
+      text-align: right;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child,
+    th:nth-child(2),
+    td:nth-child(2) {
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #374151;
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-weight: 700;
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    .good { color: var(--ok); background: #dcfce7; }
+    .warn { color: var(--warn); background: #fef9c3; }
+    .bad  { color: var(--danger); background: #fee2e2; }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .section-row {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .report-toolbar {
+      display: grid;
+      grid-template-columns: 1fr 180px 180px;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+    .report-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .formula-box {
+      background: #f8fbff;
+      border: 1px solid #dbeafe;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+
+    .formula-box h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: #1e3a8a;
+    }
+
+    .formula-line {
+      font-size: 12px;
+      color: #374151;
+      margin: 4px 0;
+    }
+
+    .chart-wrap {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+      min-height: 260px;
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: 240px;
+      display: block;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    .rank-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rank-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px dashed var(--line);
+      padding: 10px 0;
+      font-size: 14px;
+    }
+
+    .rank-item:last-child {
+      border-bottom: none;
+    }
+
+    .danger-text {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    @media (max-width: 960px) {
+      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .section-row { grid-template-columns: 1fr; }
+      .report-toolbar { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 580px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .report-toolbar { grid-template-columns: 1fr; }
+      .title { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <div>
+        <h1 class="title">進貨利潤管理系統</h1>
+        <p class="sub">零售 / 代購通用：輸入即算出成本、分攤、利潤與毛利率</p>
+      </div>
+      <div class="actions">
+        <button id="clearBtn" class="btn btn-light" type="button">清空全部資料</button>
+      </div>
+    </header>
+
+    <section class="grid kpi-grid">
+      <div class="card kpi">
+        <div class="name">總商品數量</div>
+        <div id="kpiQty" class="value">0</div>
+      </div>
+      <div class="card kpi">
+        <div class="name">總進貨成本</div>
+        <div id="kpiCost" class="value">$0</div>
+      </div>
+      <div class="card kpi">
+        <div class="name">售價總利潤</div>
+        <div id="kpiProfitList" class="value">$0</div>
+      </div>
+      <div class="card kpi">
+        <div class="name">批次總利潤</div>
+        <div id="kpiBatchProfit" class="value">$0</div>
+      </div>
+      <div class="card kpi">
+        <div class="name">平均毛利率</div>
+        <div id="kpiMargin" class="value">0%</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom: 16px;">
+      <h2 class="panel-title">報表期間</h2>
+      <div id="reportHint" class="report-note" style="margin-bottom:8px;">顯示全部資料</div>
+      <div class="report-toolbar" style="grid-template-columns: 1fr 1fr 180px;">
+        <div class="field">
+          <label for="customStart">自訂開始日</label>
+          <input id="customStart" type="date" />
+        </div>
+        <div class="field">
+          <label for="customEnd">自訂結束日</label>
+          <input id="customEnd" type="date" />
+        </div>
+        <div class="field">
+          <button id="exportMonthlyCsvBtn" class="btn btn-light" type="button" style="width:100%;">月報匯出 CSV</button>
+        </div>
+      </div>
+      <div id="exportRangeHint" class="small" style="margin-top:-6px;margin-bottom:6px;">目前匯出範圍：-</div>
+      <div class="actions" style="margin-top: 4px;">
+        <button id="exportDetailCsvBtn" class="btn btn-light" type="button">明細匯出 CSV</button>
+        <button id="printA4Btn" class="btn btn-light" type="button">列印版月報（A4）</button>
+        <button id="printDetailA4Btn" class="btn btn-light" type="button">列印版明細（A4）</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="panel-title">新增進貨明細</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="purchaseDate">進貨日期</label>
+          <input id="purchaseDate" type="date" />
+        </div>
+        <div class="field">
+          <label for="batchNo">集運批次號</label>
+          <input id="batchNo" type="text" placeholder="留白可自動產生" />
+        </div>
+        <div class="field">
+          <label for="productName">商品名稱</label>
+          <input id="productName" type="text" placeholder="例如 藍芽耳機A" />
+        </div>
+        <div class="field">
+          <label for="qty">數量</label>
+          <input id="qty" type="number" min="1" step="1" value="1" />
+        </div>
+        <div class="field">
+          <label for="unitPrice">進貨單價</label>
+          <input id="unitPrice" type="number" min="0" step="0.01" value="0" />
+        </div>
+        <div class="field">
+          <label for="shippingTotal">整單集運費</label>
+          <input id="shippingTotal" type="number" min="0" step="0.01" value="0" />
+        </div>
+        <div class="field">
+          <label for="otherTotal">整單其他費用</label>
+          <input id="otherTotal" type="number" min="0" step="0.01" value="0" />
+        </div>
+        <div class="field">
+          <label for="listPrice">定價</label>
+          <input id="listPrice" type="number" min="0" step="0.01" value="0" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="addBtn" class="btn btn-primary" type="button">新增一筆</button>
+        <button id="newBatchBtn" class="btn btn-light" type="button">建立新批次號</button>
+        <span class="small">系統會依同一集運批次號自動按「進貨金額比例」分攤運費與其他費用</span>
+        <span id="formMarginPreview" class="small">預估毛利率：0%</span>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top: 16px;">
+      <h2 class="panel-title">集運批次列表（可點擊查看）</h2>
+      <div class="formula-box">
+        <h3>批次利潤公式說明（固定）</h3>
+        <div class="formula-line">1) 分攤比率 = 商品進貨小計 / 該批次全部進貨小計</div>
+        <div class="formula-line">2) 分攤運費 = 分攤比率 × 整單集運費；分攤其他 = 分攤比率 × 整單其他費用</div>
+        <div class="formula-line">3) 單位落地成本 = (進貨小計 + 分攤運費 + 分攤其他) / 數量</div>
+        <div class="formula-line">4) 商品利潤 = (定價 - 單位落地成本) × 數量</div>
+        <div class="formula-line">5) 批次總利潤 = 該批次全部商品利潤加總（已扣整單集運費與其他費用）</div>
+      </div>
+      <div class="actions" style="margin-bottom: 8px;">
+        <button id="clearBatchFilterBtn" class="btn btn-light" type="button">顯示全部批次</button>
+        <span id="batchFilterNote" class="small">目前：全部批次</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>集運批次號</th>
+              <th>筆數</th>
+              <th>總數量</th>
+              <th>總成本</th>
+              <th>總利潤</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="batchRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top: 16px;">
+      <h2 class="panel-title">進貨明細與利潤（依期間顯示）</h2>
+      <div class="actions" style="margin-bottom: 8px;">
+        <select id="bulkBatchSelect" class="btn btn-light" style="padding:8px 10px;"></select>
+        <button id="bulkMoveBtn" class="btn btn-light" type="button">批量移動勾選商品</button>
+        <button id="clearUnusedBatchBtn" class="btn btn-light" type="button">清空未使用批次</button>
+        <span class="small">先勾選明細，再選目標批次號</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th><input id="selectAllRows" type="checkbox" /></th>
+              <th>進貨日期</th>
+              <th>集運批次號</th>
+              <th>商品</th>
+              <th>數量</th>
+              <th>進貨單價</th>
+              <th>進貨小計</th>
+              <th>分攤運費</th>
+              <th>分攤其他</th>
+              <th>單位落地成本</th>
+              <th>定價</th>
+              <th>售價利潤</th>
+              <th>毛利率</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top: 16px;">
+      <h2 class="panel-title">月度彙總報表（依期間）</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>月份</th>
+              <th>總數量</th>
+              <th>總成本</th>
+              <th>售價利潤</th>
+              <th>毛利率</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyRows"></tbody>
+        </table>
+      </div>
+      <div class="chart-wrap" style="margin-top: 12px;">
+        <svg id="monthlyChart" class="chart-svg" viewBox="0 0 1000 240" preserveAspectRatio="none"></svg>
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:#2563eb;"></span>每月總成本</span>
+          <span><span class="legend-dot" style="background:#16a34a;"></span>每月售價利潤</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-row">
+      <section class="card">
+        <h2 class="panel-title">低毛利警示</h2>
+        <div id="alerts" class="small">目前沒有資料</div>
+      </section>
+      <section class="card">
+        <h2 class="panel-title">商品利潤排行</h2>
+        <ul id="rankList" class="rank-list"></ul>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const storageKey = "purchase-profit-app-v1";
+    const storageKeyExtraBatches = "purchase-profit-extra-batches-v1";
+    const CREATE_NEW_BATCH = "__create_new_batch__";
+    let items = [];
+    let extraBatches = [];
+    let pendingBulkBatch = "";
+    let periodItems = [];
+    let filteredItems = [];
+    let monthlySummary = [];
+    let selectedBatchNo = "";
+    let selectedItemIds = new Set();
+    const currency = new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 });
+
+    function todayYmd() {
+      const d = new Date();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${d.getFullYear()}-${m}-${day}`;
+    }
+
+    function generateNextBatchNo() {
+      const ymd = todayYmd().replaceAll("-", "");
+      const prefix = `SHIP${ymd}-`;
+      const nums = getBatchOptions()
+        .filter((b) => b.startsWith(prefix))
+        .map((b) => Number(b.slice(prefix.length)))
+        .filter((n) => Number.isFinite(n));
+      const next = nums.length ? Math.max(...nums) + 1 : 1;
+      return `${prefix}${String(next).padStart(2, "0")}`;
+    }
+
+    function loadExtraBatches() {
+      try {
+        const raw = localStorage.getItem(storageKeyExtraBatches);
+        extraBatches = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(extraBatches)) extraBatches = [];
+        extraBatches = [...new Set(extraBatches.map((b) => normalizeBatchNo(b)).filter(Boolean))];
+      } catch {
+        extraBatches = [];
+      }
+    }
+
+    function saveExtraBatches() {
+      localStorage.setItem(storageKeyExtraBatches, JSON.stringify(extraBatches));
+    }
+
+    function registerBatch(name) {
+      const n = normalizeBatchNo(name);
+      if (!n || n === CREATE_NEW_BATCH) return false;
+      if (!extraBatches.includes(n)) {
+        extraBatches.push(n);
+        saveExtraBatches();
+      }
+      return true;
+    }
+
+    function load() {
+      loadExtraBatches();
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
+      try {
+        items = JSON.parse(raw).map((it) => ({
+          ...it,
+          purchaseDate: it.purchaseDate || todayYmd(),
+          batchNo: normalizeBatchNo(it.batchNo || it.poNo || "")
+        }));
+      } catch {
+        items = [];
+      }
+    }
+
+    function save() {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+    }
+
+    function toNum(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function normalizeBatchNo(v) {
+      return String(v || "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, "");
+    }
+
+    function fmtMoney(v) {
+      return currency.format(Math.round(v || 0));
+    }
+
+    function fmtPct(v) {
+      return `${((v || 0) * 100).toFixed(1)}%`;
+    }
+
+    function formatMd(dateValue) {
+      const d = new Date(dateValue);
+      return `${d.getMonth() + 1}/${d.getDate()}`;
+    }
+
+    function parseDate(v) {
+      return new Date(`${v}T00:00:00`);
+    }
+
+    function getRange() {
+      const startRaw = document.getElementById("customStart").value;
+      const endRaw = document.getElementById("customEnd").value;
+      if (!startRaw && !endRaw) return { period: "all", start: null, end: null };
+      if (!startRaw || !endRaw) return { period: "custom", start: null, end: null, invalid: true };
+      const start = parseDate(startRaw);
+      const end = new Date(`${endRaw}T23:59:59`);
+      if (start > end) return { period: "custom", start, end, invalid: true };
+      return { period: "custom", start, end };
+    }
+
+    function applyPeriodFilter() {
+      const range = getRange();
+      if (!range.start || !range.end) {
+        periodItems = [...items];
+      } else {
+        periodItems = items.filter((it) => {
+          const d = parseDate(it.purchaseDate);
+          return d >= range.start && d <= range.end;
+        });
+      }
+
+      const hint = document.getElementById("reportHint");
+      if (range.period === "all") {
+        hint.textContent = "顯示全部資料";
+      } else if (range.period === "custom" && range.invalid) {
+        periodItems = [];
+        hint.textContent = "請輸入正確的自訂開始日與結束日";
+      } else {
+        hint.textContent = `顯示 ${range.start.toLocaleDateString("zh-TW")} ~ ${range.end.toLocaleDateString("zh-TW")}`;
+      }
+
+      const exportHint = document.getElementById("exportRangeHint");
+      if (range.period === "all") {
+        exportHint.textContent = "目前匯出範圍：全部資料";
+      } else if (range.period === "custom" && range.invalid) {
+        exportHint.textContent = "目前匯出範圍：請先輸入正確的自訂開始日與結束日";
+      } else {
+        exportHint.textContent = `目前匯出範圍：${range.start.toLocaleDateString("zh-TW")} ~ ${range.end.toLocaleDateString("zh-TW")}`;
+      }
+
+      const batchExists = selectedBatchNo && periodItems.some((x) => x.batchNo === selectedBatchNo);
+      if (selectedBatchNo && !batchExists) {
+        selectedBatchNo = "";
+      }
+      filteredItems = selectedBatchNo
+        ? periodItems.filter((x) => x.batchNo === selectedBatchNo)
+        : [...periodItems];
+    }
+
+    function recalculate() {
+      const groups = {};
+      items.forEach((it) => {
+        const key = it.batchNo;
+        if (!groups[key]) {
+          groups[key] = { totalAmount: 0, shippingTotal: 0, otherTotal: 0 };
+        }
+        const amount = it.qty * it.unitPrice;
+        groups[key].totalAmount += amount;
+        // Avoid same-PO rows with 0 overwriting whole-order fees.
+        groups[key].shippingTotal = Math.max(groups[key].shippingTotal, toNum(it.shippingTotal));
+        groups[key].otherTotal = Math.max(groups[key].otherTotal, toNum(it.otherTotal));
+      });
+
+      items = items.map((it) => {
+        const amount = it.qty * it.unitPrice;
+        const g = groups[it.batchNo];
+        const ratio = g.totalAmount > 0 ? amount / g.totalAmount : 0;
+        const allocatedShipping = ratio * g.shippingTotal;
+        const allocatedOther = ratio * g.otherTotal;
+        const unitLanded = it.qty > 0 ? (amount + allocatedShipping + allocatedOther) / it.qty : 0;
+        const profitList = (it.listPrice - unitLanded) * it.qty;
+        const margin = it.listPrice > 0 ? (it.listPrice - unitLanded) / it.listPrice : 0;
+        return {
+          ...it,
+          amount,
+          allocatedShipping,
+          allocatedOther,
+          unitLanded,
+          profitList,
+          margin
+        };
+      });
+    }
+
+    function marginClass(m) {
+      if (m < 0.2) return "bad";
+      if (m < 0.35) return "warn";
+      return "good";
+    }
+
+    function removeItem(id) {
+      items = items.filter((x) => x.id !== id);
+      selectedItemIds.delete(id);
+      recalculate();
+      save();
+      render();
+    }
+
+    function getBatchOptions() {
+      const fromItems = items.map((x) => x.batchNo).filter(Boolean);
+      return [...new Set([...extraBatches, ...fromItems])].sort((a, b) => a.localeCompare(b));
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function toggleRowSelection(id, checked) {
+      if (checked) selectedItemIds.add(id);
+      else selectedItemIds.delete(id);
+    }
+
+    function toggleSelectAll(checked) {
+      filteredItems.forEach((it) => {
+        if (checked) selectedItemIds.add(it.id);
+        else selectedItemIds.delete(it.id);
+      });
+      render();
+    }
+
+    function applyBulkMove() {
+      if (!selectedItemIds.size) {
+        alert("請先勾選要移動的商品");
+        return;
+      }
+      const targetBatch = normalizeBatchNo(document.getElementById("bulkBatchSelect").value || "");
+      if (!targetBatch || targetBatch === CREATE_NEW_BATCH) {
+        alert("請先選擇有效的目標集運批次號（勿選「建立新批次」）");
+        return;
+      }
+
+      let moved = 0;
+      items.forEach((it) => {
+        if (selectedItemIds.has(it.id) && it.batchNo !== targetBatch) {
+          it.batchNo = targetBatch;
+          moved += 1;
+        }
+      });
+      if (!moved) {
+        alert("勾選資料已在同一個批次，不需移動");
+        return;
+      }
+
+      selectedItemIds.clear();
+      recalculate();
+      save();
+      render();
+    }
+
+    function clearUnusedBatches() {
+      const used = new Set(items.map((x) => normalizeBatchNo(x.batchNo)).filter(Boolean));
+      const before = extraBatches.length;
+      extraBatches = extraBatches.filter((b) => used.has(normalizeBatchNo(b)));
+      const removed = before - extraBatches.length;
+      saveExtraBatches();
+      render();
+      alert(removed > 0 ? `已清空 ${removed} 個未使用批次` : "目前沒有可清空的未使用批次");
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("rows");
+      if (!filteredItems.length) {
+        tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:#6b7280;padding:20px;">此期間尚無資料</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filteredItems.map((it) => `
+        <tr>
+          <td><input type="checkbox" ${selectedItemIds.has(it.id) ? "checked" : ""} onchange="toggleRowSelection('${it.id}', this.checked)" /></td>
+          <td>${it.purchaseDate}</td>
+          <td>${it.batchNo}</td>
+          <td>${it.productName}</td>
+          <td>${it.qty}</td>
+          <td>${fmtMoney(it.unitPrice)}</td>
+          <td>${fmtMoney(it.amount)}</td>
+          <td>${fmtMoney(it.allocatedShipping)}</td>
+          <td>${fmtMoney(it.allocatedOther)}</td>
+          <td>${fmtMoney(it.unitLanded)}</td>
+          <td>${fmtMoney(it.listPrice)}</td>
+          <td class="${it.profitList < 0 ? "danger-text" : ""}">${fmtMoney(it.profitList)}</td>
+          <td><span class="pill ${marginClass(it.margin)}">${fmtPct(it.margin)}</span></td>
+          <td>
+            <button class="btn btn-light" style="padding:6px 8px;" onclick="removeItem('${it.id}')">刪除</button>
+          </td>
+        </tr>
+      `).join("");
+
+      const allChecked = filteredItems.length > 0 && filteredItems.every((it) => selectedItemIds.has(it.id));
+      document.getElementById("selectAllRows").checked = allChecked;
+    }
+
+    function renderKpi() {
+      const qty = filteredItems.reduce((s, i) => s + i.qty, 0);
+      const totalCost = filteredItems.reduce((s, i) => s + i.amount + i.allocatedShipping + i.allocatedOther, 0);
+      const totalProfitList = filteredItems.reduce((s, i) => s + i.profitList, 0);
+      const batchProfit = selectedBatchNo
+        ? periodItems
+            .filter((x) => x.batchNo === selectedBatchNo)
+            .reduce((s, i) => s + i.profitList, 0)
+        : totalProfitList;
+      const avgMargin = filteredItems.length ? filteredItems.reduce((s, i) => s + i.margin, 0) / filteredItems.length : 0;
+
+      document.getElementById("kpiQty").textContent = qty.toLocaleString("zh-TW");
+      document.getElementById("kpiCost").textContent = fmtMoney(totalCost);
+      document.getElementById("kpiProfitList").textContent = fmtMoney(totalProfitList);
+      document.getElementById("kpiBatchProfit").textContent = fmtMoney(batchProfit);
+      document.getElementById("kpiMargin").textContent = fmtPct(avgMargin);
+    }
+
+    function renderAlerts() {
+      const low = filteredItems.filter((i) => i.margin < 0.2);
+      const box = document.getElementById("alerts");
+      if (!low.length) {
+        box.innerHTML = '<span style="color:#16a34a;font-weight:700;">目前沒有低毛利商品</span>';
+        return;
+      }
+      box.innerHTML = low
+        .slice(0, 6)
+        .map((i) => `<div style="padding:6px 0;border-bottom:1px dashed #e5e7eb;">${i.productName}（${i.batchNo}）<span class="danger-text"> ${fmtPct(i.margin)}</span></div>`)
+        .join("");
+    }
+
+    function selectBatch(batchNo) {
+      selectedBatchNo = normalizeBatchNo(batchNo);
+      render();
+    }
+
+    function renderBatchList() {
+      const map = {};
+      periodItems.forEach((it) => {
+        if (!it.batchNo) return;
+        if (!map[it.batchNo]) {
+          map[it.batchNo] = { rows: 0, qty: 0, cost: 0, profit: 0 };
+        }
+        map[it.batchNo].rows += 1;
+        map[it.batchNo].qty += it.qty;
+        map[it.batchNo].cost += it.amount + it.allocatedShipping + it.allocatedOther;
+        map[it.batchNo].profit += it.profitList;
+      });
+
+      const batches = Object.entries(map).sort((a, b) => b[1].profit - a[1].profit);
+      const tbody = document.getElementById("batchRows");
+      const note = document.getElementById("batchFilterNote");
+      note.textContent = selectedBatchNo ? `目前：${selectedBatchNo}` : "目前：全部批次";
+
+      if (!batches.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:20px;">此期間尚無批次資料</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = batches.map(([batchNo, v]) => `
+        <tr>
+          <td>${batchNo}</td>
+          <td>${v.rows}</td>
+          <td>${v.qty.toLocaleString("zh-TW")}</td>
+          <td>${fmtMoney(v.cost)}</td>
+          <td class="${v.profit < 0 ? "danger-text" : ""}">${fmtMoney(v.profit)}</td>
+          <td><button class="btn btn-light" style="padding:6px 8px;" onclick="selectBatch('${batchNo}')">查看明細</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderRanking() {
+      const rank = {};
+      filteredItems.forEach((it) => {
+        if (!rank[it.productName]) rank[it.productName] = 0;
+        rank[it.productName] += it.profitList;
+      });
+      const sorted = Object.entries(rank).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      const ul = document.getElementById("rankList");
+      if (!sorted.length) {
+        ul.innerHTML = '<li class="small">目前沒有資料</li>';
+        return;
+      }
+      ul.innerHTML = sorted.map(([name, profit], idx) =>
+        `<li class="rank-item"><span>${idx + 1}. ${name}</span><strong>${fmtMoney(profit)}</strong></li>`
+      ).join("");
+    }
+
+    function buildMonthlySummary() {
+      const map = {};
+      filteredItems.forEach((it) => {
+        const ym = (it.purchaseDate || "").slice(0, 7);
+        if (!map[ym]) {
+          map[ym] = { qty: 0, cost: 0, profitList: 0, revenueList: 0 };
+        }
+        map[ym].qty += it.qty;
+        map[ym].cost += it.amount + it.allocatedShipping + it.allocatedOther;
+        map[ym].profitList += it.profitList;
+        map[ym].revenueList += it.listPrice * it.qty;
+      });
+
+      return Object.entries(map)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([ym, v]) => ({
+          ym,
+          qty: v.qty,
+          cost: v.cost,
+          profitList: v.profitList,
+          margin: v.revenueList > 0 ? v.profitList / v.revenueList : 0
+        }));
+    }
+
+    function renderMonthlyReport() {
+      monthlySummary = buildMonthlySummary();
+      const tbody = document.getElementById("monthlyRows");
+      if (!monthlySummary.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:20px;">此期間尚無月報資料</td></tr>';
+        return;
+      }
+      const range = getRange();
+      const isCustomSingleRow = range.period === "custom" && !range.invalid && monthlySummary.length === 1;
+      const customRangeLabel = isCustomSingleRow
+        ? `${formatMd(range.start)}-${formatMd(range.end)}`
+        : "";
+
+      tbody.innerHTML = monthlySummary.map((v) => {
+        return `
+          <tr>
+            <td>${customRangeLabel || v.ym}</td>
+            <td>${v.qty.toLocaleString("zh-TW")}</td>
+            <td>${fmtMoney(v.cost)}</td>
+            <td class="${v.profitList < 0 ? "danger-text" : ""}">${fmtMoney(v.profitList)}</td>
+            <td><span class="pill ${marginClass(v.margin)}">${fmtPct(v.margin)}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderMonthlyChart() {
+      const svg = document.getElementById("monthlyChart");
+      if (!monthlySummary.length) {
+        svg.innerHTML = '<text x="500" y="120" text-anchor="middle" fill="#6b7280" font-size="14">此期間尚無圖表資料</text>';
+        return;
+      }
+
+      const width = 1000;
+      const height = 240;
+      const padL = 50;
+      const padR = 20;
+      const padT = 14;
+      const padB = 35;
+      const plotW = width - padL - padR;
+      const plotH = height - padT - padB;
+
+      const maxValue = Math.max(
+        ...monthlySummary.map((x) => x.cost),
+        ...monthlySummary.map((x) => x.profitList),
+        1
+      );
+
+      const x = (idx) => padL + (monthlySummary.length === 1 ? plotW / 2 : (idx * plotW) / (monthlySummary.length - 1));
+      const y = (v) => padT + plotH - (v / maxValue) * plotH;
+
+      const costPoints = monthlySummary.map((m, i) => `${x(i)},${y(m.cost)}`).join(" ");
+      const profitPoints = monthlySummary.map((m, i) => `${x(i)},${y(m.profitList)}`).join(" ");
+
+      const xLabels = monthlySummary.map((m, i) =>
+        `<text x="${x(i)}" y="${height - 12}" text-anchor="middle" fill="#6b7280" font-size="11">${m.ym.slice(5)}</text>`
+      ).join("");
+
+      svg.innerHTML = `
+        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + plotH}" stroke="#d1d5db" />
+        <line x1="${padL}" y1="${padT + plotH}" x2="${width - padR}" y2="${padT + plotH}" stroke="#d1d5db" />
+        <polyline fill="none" stroke="#2563eb" stroke-width="3" points="${costPoints}" />
+        <polyline fill="none" stroke="#16a34a" stroke-width="3" points="${profitPoints}" />
+        ${monthlySummary.map((m, i) => `<circle cx="${x(i)}" cy="${y(m.cost)}" r="3" fill="#2563eb" />`).join("")}
+        ${monthlySummary.map((m, i) => `<circle cx="${x(i)}" cy="${y(m.profitList)}" r="3" fill="#16a34a" />`).join("")}
+        ${xLabels}
+      `;
+    }
+
+    function csvCell(v) {
+      const s = String(v ?? "");
+      if (s.includes(",") || s.includes("\"") || s.includes("\n")) {
+        return `"${s.replaceAll("\"", "\"\"")}"`;
+      }
+      return s;
+    }
+
+    function exportMonthlyCsv() {
+      // Recompute from latest filters to avoid stale export data.
+      applyPeriodFilter();
+      const rows = buildMonthlySummary();
+      if (!rows.length) {
+        alert("此期間沒有可匯出的月報資料");
+        return;
+      }
+      const range = getRange();
+      const isCustomSingleRow = range.period === "custom" && !range.invalid && rows.length === 1;
+      const customRangeLabel = isCustomSingleRow
+        ? `${formatMd(range.start)}-${formatMd(range.end)}`
+        : "";
+      const header = [isCustomSingleRow ? "區間" : "月份", "總數量", "總成本", "售價利潤", "毛利率"];
+      const lines = [header.join(",")];
+      rows.forEach((m) => {
+        lines.push([
+          customRangeLabel || m.ym,
+          m.qty,
+          Math.round(m.cost),
+          Math.round(m.profitList),
+          `${(m.margin * 100).toFixed(2)}%`
+        ].map(csvCell).join(","));
+      });
+
+      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = isCustomSingleRow
+        ? `月報_${formatMd(range.start).replace("/", "-")}-${formatMd(range.end).replace("/", "-")}.csv`
+        : `月報_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportDetailCsv() {
+      if (!filteredItems.length) {
+        alert("此期間沒有可匯出的明細資料");
+        return;
+      }
+      const header = [
+        "進貨日期", "集運批次號", "商品", "數量", "進貨單價", "進貨小計",
+        "分攤運費", "分攤其他", "單位落地成本", "售價",
+        "售價利潤", "毛利率"
+      ];
+      const lines = [header.join(",")];
+      filteredItems.forEach((it) => {
+        lines.push([
+          it.purchaseDate,
+          it.batchNo,
+          it.productName,
+          it.qty,
+          Math.round(it.unitPrice),
+          Math.round(it.amount),
+          Math.round(it.allocatedShipping),
+          Math.round(it.allocatedOther),
+          Math.round(it.unitLanded),
+          Math.round(it.listPrice),
+          Math.round(it.profitList),
+          `${(it.margin * 100).toFixed(2)}%`
+        ].map(csvCell).join(","));
+      });
+
+      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `明細報表_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function printA4Report() {
+      if (!monthlySummary.length) {
+        alert("此期間沒有可列印的月報資料");
+        return;
+      }
+      const periodText = document.getElementById("reportHint").textContent || "期間未指定";
+      const qty = filteredItems.reduce((s, i) => s + i.qty, 0);
+      const totalCost = filteredItems.reduce((s, i) => s + i.amount + i.allocatedShipping + i.allocatedOther, 0);
+      const totalProfitList = filteredItems.reduce((s, i) => s + i.profitList, 0);
+      const avgMargin = filteredItems.length ? filteredItems.reduce((s, i) => s + i.margin, 0) / filteredItems.length : 0;
+
+      const rowsHtml = monthlySummary.map((m) => `
+        <tr>
+          <td>${m.ym}</td>
+          <td>${m.qty.toLocaleString("zh-TW")}</td>
+          <td>${fmtMoney(m.cost)}</td>
+          <td>${fmtMoney(m.profitList)}</td>
+          <td>${fmtPct(m.margin)}</td>
+        </tr>
+      `).join("");
+
+      const printWindow = window.open("", "_blank", "width=900,height=700");
+      if (!printWindow) {
+        alert("無法開啟列印視窗，請檢查瀏覽器是否封鎖彈出視窗");
+        return;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="zh-Hant">
+        <head>
+          <meta charset="UTF-8" />
+          <title>A4月報列印</title>
+          <style>
+            @page { size: A4; margin: 12mm; }
+            body { font-family: "Microsoft JhengHei", Arial, sans-serif; color: #111827; }
+            h1 { margin: 0 0 4px; font-size: 22px; }
+            .muted { color: #6b7280; font-size: 12px; margin-bottom: 10px; }
+            .kpi { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
+            .box { border: 1px solid #d1d5db; border-radius: 8px; padding: 8px; }
+            .label { color: #6b7280; font-size: 11px; margin-bottom: 3px; }
+            .value { font-size: 14px; font-weight: 700; }
+            table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+            th, td { border: 1px solid #d1d5db; padding: 6px 8px; font-size: 12px; text-align: right; }
+            th:first-child, td:first-child { text-align: left; }
+            .footer { margin-top: 10px; color: #6b7280; font-size: 11px; }
+          </style>
+        </head>
+        <body>
+          <h1>進貨利潤月報</h1>
+          <div class="muted">${periodText}</div>
+          <div class="kpi">
+            <div class="box"><div class="label">總商品數量</div><div class="value">${qty.toLocaleString("zh-TW")}</div></div>
+            <div class="box"><div class="label">總進貨成本</div><div class="value">${fmtMoney(totalCost)}</div></div>
+            <div class="box"><div class="label">售價總利潤</div><div class="value">${fmtMoney(totalProfitList)}</div></div>
+            <div class="box"><div class="label">平均毛利率</div><div class="value">${fmtPct(avgMargin)}</div></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>月份</th>
+                <th>總數量</th>
+                <th>總成本</th>
+                <th>售價利潤</th>
+                <th>毛利率</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+          <div class="footer">列印時間：${new Date().toLocaleString("zh-TW")}</div>
+          <script>
+            window.onload = function () { window.print(); };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    function printDetailA4() {
+      if (!filteredItems.length) {
+        alert("此期間沒有可列印的明細資料");
+        return;
+      }
+
+      const periodText = document.getElementById("reportHint").textContent || "期間未指定";
+      const totalCost = filteredItems.reduce((s, i) => s + i.amount + i.allocatedShipping + i.allocatedOther, 0);
+      const totalProfitList = filteredItems.reduce((s, i) => s + i.profitList, 0);
+
+      const rowsHtml = filteredItems.map((it) => `
+        <tr>
+          <td>${it.purchaseDate}</td>
+          <td>${it.batchNo}</td>
+          <td>${it.productName}</td>
+          <td>${it.qty.toLocaleString("zh-TW")}</td>
+          <td>${fmtMoney(it.unitPrice)}</td>
+          <td>${fmtMoney(it.amount)}</td>
+          <td>${fmtMoney(it.allocatedShipping)}</td>
+          <td>${fmtMoney(it.allocatedOther)}</td>
+          <td>${fmtMoney(it.unitLanded)}</td>
+          <td>${fmtMoney(it.listPrice)}</td>
+          <td>${fmtMoney(it.profitList)}</td>
+          <td>${fmtPct(it.margin)}</td>
+        </tr>
+      `).join("");
+
+      const printWindow = window.open("", "_blank", "width=1200,height=760");
+      if (!printWindow) {
+        alert("無法開啟列印視窗，請檢查瀏覽器是否封鎖彈出視窗");
+        return;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="zh-Hant">
+        <head>
+          <meta charset="UTF-8" />
+          <title>A4明細列印</title>
+          <style>
+            @page { size: A4 landscape; margin: 10mm; }
+            body { font-family: "Microsoft JhengHei", Arial, sans-serif; color: #111827; }
+            h1 { margin: 0 0 4px; font-size: 20px; }
+            .muted { color: #6b7280; font-size: 12px; margin-bottom: 8px; }
+            .summary { display: flex; gap: 10px; margin-bottom: 8px; }
+            .box { border: 1px solid #d1d5db; border-radius: 7px; padding: 7px 9px; min-width: 150px; }
+            .label { color: #6b7280; font-size: 11px; margin-bottom: 2px; }
+            .value { font-size: 14px; font-weight: 700; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #d1d5db; padding: 5px 6px; font-size: 10.5px; text-align: right; white-space: nowrap; }
+            th:nth-child(-n+3), td:nth-child(-n+3) { text-align: left; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+            .footer { margin-top: 7px; color: #6b7280; font-size: 10px; }
+          </style>
+        </head>
+        <body>
+          <h1>進貨利潤明細表</h1>
+          <div class="muted">${periodText}</div>
+          <div class="summary">
+            <div class="box"><div class="label">明細筆數</div><div class="value">${filteredItems.length.toLocaleString("zh-TW")}</div></div>
+            <div class="box"><div class="label">總進貨成本</div><div class="value">${fmtMoney(totalCost)}</div></div>
+            <div class="box"><div class="label">售價總利潤</div><div class="value">${fmtMoney(totalProfitList)}</div></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>進貨日期</th>
+                <th>集運批次號</th>
+                <th>商品</th>
+                <th>數量</th>
+                <th>進貨單價</th>
+                <th>進貨小計</th>
+                <th>分攤運費</th>
+                <th>分攤其他</th>
+                <th>單位落地成本</th>
+                <th>售價</th>
+                <th>售價利潤</th>
+                <th>毛利率</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+          <div class="footer">列印時間：${new Date().toLocaleString("zh-TW")}</div>
+          <script>
+            window.onload = function () { window.print(); };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    function render() {
+      applyPeriodFilter();
+      selectedItemIds = new Set([...selectedItemIds].filter((id) => filteredItems.some((x) => x.id === id)));
+      renderBulkBatchOptions();
+      renderBatchList();
+      renderTable();
+      renderKpi();
+      renderAlerts();
+      renderRanking();
+      renderMonthlyReport();
+      renderMonthlyChart();
+    }
+
+    function renderBulkBatchOptions() {
+      const select = document.getElementById("bulkBatchSelect");
+      const options = getBatchOptions();
+      const createOpt = `<option value="${CREATE_NEW_BATCH}">+ 建立新批次</option>`;
+      const rest = options.map((b) => `<option value="${escapeHtml(b)}">移動到：${escapeHtml(b)}</option>`).join("");
+      select.innerHTML = createOpt + rest;
+
+      let pick = pendingBulkBatch;
+      pendingBulkBatch = "";
+      if (pick && options.includes(pick)) {
+        select.value = pick;
+        select.dataset.stableValue = pick;
+        return;
+      }
+      const prev = select.dataset.stableValue;
+      if (prev && prev !== CREATE_NEW_BATCH && options.includes(prev)) {
+        select.value = prev;
+        select.dataset.stableValue = prev;
+        return;
+      }
+      if (selectedBatchNo && options.includes(selectedBatchNo)) {
+        select.value = selectedBatchNo;
+        select.dataset.stableValue = selectedBatchNo;
+        return;
+      }
+      if (options.length) {
+        select.value = options[0];
+        select.dataset.stableValue = options[0];
+      } else {
+        select.value = CREATE_NEW_BATCH;
+        select.dataset.stableValue = "";
+      }
+    }
+
+    function onBulkBatchSelectChange() {
+      const select = document.getElementById("bulkBatchSelect");
+      if (!select || select.value !== CREATE_NEW_BATCH) {
+        if (select && select.value !== CREATE_NEW_BATCH) select.dataset.stableValue = select.value;
+        return;
+      }
+      const name = normalizeBatchNo(prompt("請輸入新集運批次號", "") || "");
+      if (!name) {
+        const fallback = select.dataset.stableValue || getBatchOptions()[0] || "";
+        select.value = fallback && fallback !== CREATE_NEW_BATCH ? fallback : CREATE_NEW_BATCH;
+        return;
+      }
+      registerBatch(name);
+      pendingBulkBatch = name;
+      render();
+    }
+
+
+    function clearInputs() {
+      document.getElementById("purchaseDate").value = todayYmd();
+      document.getElementById("productName").value = "";
+      document.getElementById("qty").value = 1;
+      document.getElementById("unitPrice").value = 0;
+      document.getElementById("listPrice").value = 0;
+      updateFormMarginPreview();
+    }
+
+    function updateFormMarginPreview() {
+      const batchNo = normalizeBatchNo(document.getElementById("batchNo").value || "");
+      const qty = toNum(document.getElementById("qty").value);
+      const unitPrice = toNum(document.getElementById("unitPrice").value);
+      const listPrice = toNum(document.getElementById("listPrice").value);
+      let shippingTotal = toNum(document.getElementById("shippingTotal").value);
+      let otherTotal = toNum(document.getElementById("otherTotal").value);
+      const box = document.getElementById("formMarginPreview");
+
+      if (!batchNo || qty <= 0 || listPrice <= 0) {
+        box.textContent = "預估毛利率：0%";
+        return;
+      }
+
+      const same = items.filter((x) => x.batchNo === batchNo);
+      const amount = qty * unitPrice;
+      const existingAmount = same.reduce((s, x) => s + x.qty * x.unitPrice, 0);
+      const totalAmount = existingAmount + amount;
+      if (shippingTotal === 0) shippingTotal = same.reduce((m, x) => Math.max(m, toNum(x.shippingTotal)), 0);
+      if (otherTotal === 0) otherTotal = same.reduce((m, x) => Math.max(m, toNum(x.otherTotal)), 0);
+      const ratio = totalAmount > 0 ? amount / totalAmount : 0;
+      const unitLanded = qty > 0 ? (amount + ratio * shippingTotal + ratio * otherTotal) / qty : 0;
+      const margin = listPrice > 0 ? (listPrice - unitLanded) / listPrice : 0;
+      box.textContent = `預估毛利率：${fmtPct(margin)}`;
+    }
+
+    function addItem() {
+      const purchaseDate = document.getElementById("purchaseDate").value;
+      let batchNo = normalizeBatchNo(document.getElementById("batchNo").value);
+      const productName = document.getElementById("productName").value.trim();
+      const qty = toNum(document.getElementById("qty").value);
+      const unitPrice = toNum(document.getElementById("unitPrice").value);
+      let shippingTotal = toNum(document.getElementById("shippingTotal").value);
+      let otherTotal = toNum(document.getElementById("otherTotal").value);
+      const listPrice = toNum(document.getElementById("listPrice").value);
+
+      if (!purchaseDate || !productName || qty <= 0) {
+        alert("請至少填入：進貨日期、商品名稱、數量(>0)");
+        return;
+      }
+
+      // Auto-generate batch number if user leaves it blank.
+      if (!batchNo) {
+        batchNo = generateNextBatchNo();
+        document.getElementById("batchNo").value = batchNo;
+      }
+
+      registerBatch(batchNo);
+
+      // If same batch already exists, reuse whole-batch fees when inputs are left as 0.
+      const samePoItems = items.filter((x) => x.batchNo === batchNo);
+      if (samePoItems.length) {
+        const existingShipping = Math.max(...samePoItems.map((x) => toNum(x.shippingTotal)), 0);
+        const existingOther = Math.max(...samePoItems.map((x) => toNum(x.otherTotal)), 0);
+        if (shippingTotal === 0) shippingTotal = existingShipping;
+        if (otherTotal === 0) otherTotal = existingOther;
+      }
+
+      items.push({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        purchaseDate,
+        batchNo,
+        productName,
+        qty,
+        unitPrice,
+        shippingTotal,
+        otherTotal,
+        listPrice
+      });
+
+      recalculate();
+      save();
+      render();
+      clearInputs();
+    }
+
+    document.getElementById("addBtn").addEventListener("click", addItem);
+    document.getElementById("newBatchBtn").addEventListener("click", () => {
+      const newBatch = generateNextBatchNo();
+      registerBatch(newBatch);
+      document.getElementById("batchNo").value = newBatch;
+      pendingBulkBatch = newBatch;
+      render();
+      updateFormMarginPreview();
+    });
+    document.getElementById("customStart").addEventListener("change", render);
+    document.getElementById("customEnd").addEventListener("change", render);
+    document.getElementById("exportMonthlyCsvBtn").addEventListener("click", exportMonthlyCsv);
+    document.getElementById("exportDetailCsvBtn").addEventListener("click", exportDetailCsv);
+    document.getElementById("printA4Btn").addEventListener("click", printA4Report);
+    document.getElementById("printDetailA4Btn").addEventListener("click", printDetailA4);
+    document.getElementById("bulkMoveBtn").addEventListener("click", applyBulkMove);
+    document.getElementById("clearUnusedBatchBtn").addEventListener("click", clearUnusedBatches);
+    document.getElementById("bulkBatchSelect").addEventListener("change", onBulkBatchSelectChange);
+    document.getElementById("selectAllRows").addEventListener("change", (e) => toggleSelectAll(e.target.checked));
+    document.getElementById("clearBatchFilterBtn").addEventListener("click", () => {
+      selectedBatchNo = "";
+      render();
+    });
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      if (!confirm("確定要清空所有資料嗎？")) return;
+      items = [];
+      recalculate();
+      save();
+      render();
+    });
+
+    document.getElementById("purchaseDate").value = todayYmd();
+    document.getElementById("customStart").value = `${new Date(new Date().getFullYear(), new Date().getMonth() - 5, 1).toISOString().slice(0, 10)}`;
+    document.getElementById("customEnd").value = todayYmd();
+    load();
+    recalculate();
+    render();
+    ["batchNo", "qty", "unitPrice", "shippingTotal", "otherTotal", "listPrice"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", updateFormMarginPreview);
+    });
+    updateFormMarginPreview();
+    window.removeItem = removeItem;
+    window.toggleRowSelection = toggleRowSelection;
+    window.selectBatch = selectBatch;
+  </script>
+</body>
+</html>
