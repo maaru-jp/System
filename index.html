@@ -526,6 +526,33 @@
   </div>
 
   <script>
+    const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwJ62fXt4JZQf3d1FvEmurWgiYgVPG9A_qq6WiaJXjhHPr_pSUGgNQMMS0S-XVgYoBosQ/exec";
+    const SHEET_API_TOKEN = "purchase_2026_x8K9mP2Qw7R4tY1ZaB6nL0";
+    async function syncItemToSheet(item) {
+  if (!SHEET_WEBHOOK_URL || !SHEET_API_TOKEN) return;
+  try {
+    await fetch(SHEET_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        token: SHEET_API_TOKEN,
+        purchaseDate: item.purchaseDate,
+        batchNo: item.batchNo,
+        productName: item.productName,
+        qty: item.qty,
+        unitPrice: item.unitPrice,
+        shippingTotal: item.shippingTotal,
+        otherTotal: item.otherTotal,
+        listPrice: item.listPrice,
+        unitLanded: item.unitLanded,
+        profitList: item.profitList,
+        margin: item.margin
+      })
+    });
+  } catch (e) {
+    console.error("syncItemToSheet failed", e);
+  }
+}
     const storageKey = "purchase-profit-app-v1";
     const storageKeyExtraBatches = "purchase-profit-extra-batches-v1";
     const CREATE_NEW_BATCH = "__create_new_batch__";
@@ -1410,6 +1437,8 @@
       });
 
       recalculate();
+      const newItem = items[items.length - 1];
+      syncItemToSheet(newItem);
       save();
       render();
       clearInputs();
